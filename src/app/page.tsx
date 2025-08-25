@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRequireAuth } from "../lib/useRequireAuth";
 import FieldToggle from "@/components/field-toggle";
 import LiveGrid from "@/components/live-grid";
 import PointSelection from "@/components/route-selection";
@@ -11,6 +12,7 @@ import { ExamState } from "../lib/data-types";
 import { getExamState } from "../lib/db-operations";
 
 export default function Home() {
+    useRequireAuth();
     const timerCountdown = 120; // Default to 120 seconds, change if needed
     const [examState, setExamStateLocal] = useState<ExamState | null>(null);
 
@@ -25,6 +27,19 @@ export default function Home() {
             <p className="md:text-4xl text-2xl font-bold">
                 ISDN 2602 Control Panel
             </p>
+            {/* <div>
+                <span>Display exam state for testing firebase only:</span>
+                <p>
+                    {examState?.activated
+                        ? "Exam Activated"
+                        : "Exam Not Activated"}
+                </p>
+                <p>Start point: {examState?.start_point}</p>
+                <p>End point: {examState?.end_point}</p>
+                <p>Time remaining: {examState?.time_remain}</p>
+                <p>Task ID: {examState?.task_id}</p>
+            </div> */}
+
             <p className="md:hidden">
                 View is not optimized for mobile devices, try to use your laptop
                 for a better experience.
