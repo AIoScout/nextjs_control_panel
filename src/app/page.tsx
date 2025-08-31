@@ -2,11 +2,11 @@
 import { useRequireAuth } from "../lib/useRequireAuth";
 import { useWritePermission } from "../lib/useWritePermission";
 import FieldToggle from "@/components/field-toggle";
-import LiveGrid from "@/components/live-grid";
+// import LiveGrid from "@/components/live-grid";
 import PointSelection from "@/components/route-selection";
 import TaskSelection from "@/components/task-selection";
 import Timer from "@/components/timer";
-import TrafficLights from "@/components/traffic-light";
+// import TrafficLights from "@/components/traffic-light";
 import { AdminControls } from "@/components/admin-controls";
 import { DemoModeIndicator } from "@/components/demo-mode-indicator";
 

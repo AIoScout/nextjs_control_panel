@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, isAdmin } from "../lib/firebase";
 import { getDemoMode, setDemoMode } from "../lib/db-operations";
-import { Cog, ChevronRight, Power, ChevronLeft } from "lucide-react";
+import { Cog, ChevronRight, Power } from "lucide-react";
 import Link from "next/link";
 
 export function AdminControls() {
