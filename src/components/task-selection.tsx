@@ -1,7 +1,11 @@
 import { getTask, updateTask } from "@/lib/db-operations";
 import { useState, useEffect } from "react";
 
-export default function TaskSelection() {
+interface TaskSelectionProps {
+    canWrite: boolean;
+}
+
+export default function TaskSelection({ canWrite }: TaskSelectionProps) {
     // TODO hardcode tasks for now, later fetch from database maybe set with admin panel
     const tasks = [
         { id: 1, name: "Task 1" },
@@ -29,6 +33,7 @@ export default function TaskSelection() {
             <select
                 value={taskSelected ?? "Pick a task"}
                 className="select"
+                disabled={!canWrite}
                 onChange={(e) => {
                     const selectedTaskId = Number(e.target.value);
                     setTaskSelected(selectedTaskId);

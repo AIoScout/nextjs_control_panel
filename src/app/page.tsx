@@ -1,78 +1,88 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRequireAuth } from "../lib/useRequireAuth";
+import { useWritePermission } from "../lib/useWritePermission";
 import FieldToggle from "@/components/field-toggle";
-import LiveGrid from "@/components/live-grid";
+// import LiveGrid from "@/components/live-grid";
 import PointSelection from "@/components/route-selection";
 import TaskSelection from "@/components/task-selection";
 import Timer from "@/components/timer";
 import TrafficLights from "@/components/traffic-light";
+import { AdminControls } from "@/components/admin-controls";
+import { DemoModeIndicator } from "@/components/demo-mode-indicator";
 
 import { ExamState } from "../lib/data-types";
-import { getExamState } from "../lib/db-operations";
+import { getDemoMode, getExamState } from "../lib/db-operations";
 
 export default function Home() {
-    useRequireAuth();
+    const { user, loading: authLoading } = useRequireAuth();
+    const { canWrite, loading: writeLoading } = useWritePermission();
     const timerCountdown = 120; // Default to 120 seconds, change if needed
     const [examState, setExamStateLocal] = useState<ExamState | null>(null);
 
+    const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
+
     useEffect(() => {
-        // Fetch exam state and traffic lights on mount
-        getExamState().then(setExamStateLocal);
-        // console.log("Exam State:", examState);
-    }, [examState]);
+        // Only fetch data after authentication is complete
+        if (!authLoading && user) {
+            getExamState().then(setExamStateLocal);
+            getDemoMode().then(setIsDemoMode);
+        }
+    }, [authLoading, user]);
+
+    if (authLoading || writeLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="flex flex-col min-h-screen p-8 gap-4">
-            <p className="md:text-4xl text-2xl font-bold">
-                ISDN 2602 Control Panel
-            </p>
-            {/* <div>
-                <span>Display exam state for testing firebase only:</span>
-                <p>
-                    {examState?.activated
-                        ? "Exam Activated"
-                        : "Exam Not Activated"}
+            <div className="justify-between flex flex-row">
+                <p className="md:text-4xl text-2xl font-bold">
+                    ISDN 2602 Control Panel
                 </p>
-                <p>Start point: {examState?.start_point}</p>
-                <p>End point: {examState?.end_point}</p>
-                <p>Time remaining: {examState?.time_remain}</p>
-                <p>Task ID: {examState?.task_id}</p>
-            </div> */}
+                <p>Signed in as: {user?.email}</p>
+            </div>
+
+            {/* Admin Controls - only visible to admins */}
+            <AdminControls />
+
+            {/* Demo Mode Indicator - shows when demo mode is active */}
+            <DemoModeIndicator />
 
             <p className="md:hidden">
                 View is not optimized for mobile devices, try to use your laptop
                 for a better experience.
             </p>
+
             <div className="hidden md:flex flex-col md:flex-row gap-4 h-full w-full justify-end">
-                <TrafficLights />
-                <LiveGrid />
+                {/* <TrafficLights /> */}
+                {/* <LiveGrid /> */}
             </div>
 
             <div className="flex flex-col gap-4 md:hidden">
-                <TrafficLights />
-                <LiveGrid />
+                {/* <TrafficLights /> */}
+                {/* <LiveGrid /> */}
             </div>
 
             <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-2 h-full">
                 <div>
-                    <FieldToggle />
+                    <FieldToggle canWrite={canWrite} />
                 </div>
                 <div className="row-span-2 h-full">
-                    <Timer timerLimit={timerCountdown} />
+                    <Timer timerLimit={timerCountdown} canWrite={canWrite} />
                 </div>
                 <div className="col-start-1 row-start-2">
-                    <TaskSelection />
+                    <TaskSelection canWrite={canWrite} />
                 </div>
                 <div className="row-span-2 col-start-3 row-start-1 h-full">
-                    <PointSelection />
+                    <PointSelection canWrite={canWrite} />
                 </div>
             </div>
             <div className="flex flex-col gap-4 md:hidden">
-                <FieldToggle />
-                <TaskSelection />
-                <PointSelection />
-                <Timer timerLimit={timerCountdown} />
+                <FieldToggle canWrite={canWrite} />
+                <TaskSelection canWrite={canWrite} />
+                <PointSelection canWrite={canWrite} />
+                <Timer timerLimit={timerCountdown} canWrite={canWrite} />
             </div>
         </div>
     );

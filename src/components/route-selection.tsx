@@ -2,7 +2,11 @@
 import { useState, useEffect } from "react";
 import { updateRoute, getRoute } from "@/lib/db-operations";
 
-export default function RouteSelection() {
+interface RouteSelectionProps {
+    canWrite: boolean;
+}
+
+export default function RouteSelection({ canWrite }: RouteSelectionProps) {
     // TODO: later add this setting to admin panel so that the maximum points can be changed
     const maxPoints = 15; // Maximum points for the range sliders
     const [startingPoint, setStartingPoint] = useState(1);
@@ -52,6 +56,7 @@ export default function RouteSelection() {
                         value={startingPoint}
                         className="range range-primary"
                         step="1"
+                        disabled={!canWrite}
                         onChange={(e) => {
                             setStartingPoint(Number(e.target.value));
                         }}
@@ -67,6 +72,7 @@ export default function RouteSelection() {
                         value={endingPoint}
                         className="range range-primary"
                         step="1"
+                        disabled={!canWrite}
                         onChange={(e) => {
                             setEndingPoint(Number(e.target.value));
                         }}
@@ -77,6 +83,7 @@ export default function RouteSelection() {
             <button
                 className="btn btn-primary mt-4"
                 onClick={handleRouteChange}
+                disabled={!canWrite}
             >
                 Update Route
             </button>

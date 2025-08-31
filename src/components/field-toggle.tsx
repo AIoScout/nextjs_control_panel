@@ -1,20 +1,47 @@
 "use client";
 import { useState, useEffect } from "react";
-export default function FieldToggle() {
-    const [finalDemoDay, setFinalDemoDay] = useState(() => {
-        if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("finalDemoDay");
-            return saved !== null ? JSON.parse(saved) : true;
-        }
-        return false; // Default value if running on server or localStorage is empty
-    });
+import { getExamState, updateExamState } from "../lib/db-operations";
 
-    // Update localStorage when finalDemoDay changes
+interface FieldToggleProps {
+    canWrite: boolean;
+}
+
+export default function FieldToggle({ canWrite }: FieldToggleProps) {
+    // true = 'final demo arena', false = 'testing field'
+    const [finalDemoDay, setFinalDemoDay] = useState<boolean | null>(null);
+
+    // Load initial value from db
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            localStorage.setItem("finalDemoDay", JSON.stringify(finalDemoDay));
+        async function fetchField() {
+            try {
+                const examState = await getExamState();
+                if (examState && examState.field === "final demo arena") {
+                    setFinalDemoDay(true);
+                } else {
+                    setFinalDemoDay(false);
+                }
+            } catch {
+                setFinalDemoDay(false); // fallback
+            }
         }
+        fetchField();
+    }, []);
+
+    // Update db when finalDemoDay changes (but not on initial load)
+    useEffect(() => {
+        if (finalDemoDay === null) return;
+        async function updateField() {
+            try {
+                await updateExamState({
+                    field: finalDemoDay ? "final demo arena" : "testing field",
+                });
+            } catch {
+                // Optionally handle error
+            }
+        }
+        updateField();
     }, [finalDemoDay]);
+
     return (
         <div className="flex flex-col gap-2 content-center items-center p-4 border border-gray-300 rounded-lg shadow-md bg-white">
             <h1 className="text-3xl font-medium">Field</h1>
@@ -23,6 +50,8 @@ export default function FieldToggle() {
                 <input
                     type="checkbox"
                     className="toggle toggle-xl"
+                    checked={finalDemoDay ?? false}
+                    disabled={finalDemoDay === null || !canWrite}
                     onChange={(e) => {
                         setFinalDemoDay(e.target.checked);
                         console.log(

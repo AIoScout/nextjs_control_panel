@@ -10,9 +10,10 @@ import {
 
 interface TimerProps {
     timerLimit: number;
+    canWrite: boolean;
 }
 
-export default function Timer({ timerLimit }: TimerProps) {
+export default function Timer({ timerLimit, canWrite }: TimerProps) {
     const [seconds, setSeconds] = useState(timerLimit || 120); // Default to 2 mins
     const [isActive, setIsActive] = useState(false);
 
@@ -79,15 +80,27 @@ export default function Timer({ timerLimit }: TimerProps) {
             <p className="text-4xl font-mono">{formatTime()}</p>
             <div className="flex flex-col gap-2 w-full">
                 {!isActive ? (
-                    <button onClick={startTimer} className="btn btn-primary">
+                    <button
+                        onClick={startTimer}
+                        className="btn btn-primary"
+                        disabled={!canWrite}
+                    >
                         {seconds === 120 ? "Start" : "Resume"}
                     </button>
                 ) : (
-                    <button onClick={pauseTimer} className="btn btn-secondary">
+                    <button
+                        onClick={pauseTimer}
+                        className="btn btn-secondary"
+                        disabled={!canWrite}
+                    >
                         Pause
                     </button>
                 )}
-                <button onClick={resetTimer} className="btn btn-primary">
+                <button
+                    onClick={resetTimer}
+                    className="btn btn-primary"
+                    disabled={!canWrite}
+                >
                     Reset
                 </button>
             </div>
