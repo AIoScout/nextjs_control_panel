@@ -34,7 +34,7 @@ export default function Login() {
     return (
         <div className="flex flex-col min-h-screen p-8 gap-4">
             <p className="md:text-4xl text-2xl font-bold">Login</p>
-            <Link href="/sign-up" className="text-primary underline">
+            <Link href="/sign-up" className="text-secondary underline">
                 Don&apos;t have an account? Sign up
             </Link>
 
@@ -60,7 +60,7 @@ export default function Login() {
                 />
                 <button
                     type="submit"
-                    className="bg-primary text-white p-2 rounded disabled:opacity-50"
+                    className="bg-secondary text-white p-2 rounded disabled:opacity-50"
                     disabled={loading}
                 >
                     {loading ? "Logging in..." : "Login"}

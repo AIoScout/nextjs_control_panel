@@ -54,9 +54,6 @@ export default function FieldToggle({ canWrite }: FieldToggleProps) {
                     disabled={finalDemoDay === null || !canWrite}
                     onChange={(e) => {
                         setFinalDemoDay(e.target.checked);
-                        console.log(
-                            `Using Final Demo Field?: ${e.target.checked}`
-                        );
                     }}
                 />
                 <span>Final Demo Arena</span>

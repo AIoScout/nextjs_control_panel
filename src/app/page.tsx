@@ -1,9 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import { useRequireAuth } from "../lib/useRequireAuth";
 import { useWritePermission } from "../lib/useWritePermission";
 import FieldToggle from "@/components/field-toggle";
-// import LiveGrid from "@/components/live-grid";
+import LiveGrid from "@/components/live-grid";
 import PointSelection from "@/components/route-selection";
 import TaskSelection from "@/components/task-selection";
 import Timer from "@/components/timer";
@@ -11,24 +10,10 @@ import TrafficLights from "@/components/traffic-light";
 import { AdminControls } from "@/components/admin-controls";
 import { DemoModeIndicator } from "@/components/demo-mode-indicator";
 
-import { ExamState } from "../lib/data-types";
-import { getDemoMode, getExamState } from "../lib/db-operations";
-
 export default function Home() {
     const { user, loading: authLoading } = useRequireAuth();
     const { canWrite, loading: writeLoading } = useWritePermission();
     const timerCountdown = 120; // Default to 120 seconds, change if needed
-    const [examState, setExamStateLocal] = useState<ExamState | null>(null);
-
-    const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
-
-    useEffect(() => {
-        // Only fetch data after authentication is complete
-        if (!authLoading && user) {
-            getExamState().then(setExamStateLocal);
-            getDemoMode().then(setIsDemoMode);
-        }
-    }, [authLoading, user]);
 
     if (authLoading || writeLoading) {
         return <div>Loading...</div>;
@@ -54,15 +39,15 @@ export default function Home() {
                 for a better experience.
             </p>
 
-            <div className="hidden md:flex flex-col md:flex-row gap-4 h-full w-full justify-end">
-                {/* <TrafficLights /> */}
-                {/* <LiveGrid /> */}
+            {/* <div className="hidden md:flex flex-col md:flex-row gap-4 h-full w-full justify-end">
+                <TrafficLights />
+                <LiveGrid />
             </div>
 
             <div className="flex flex-col gap-4 md:hidden">
-                {/* <TrafficLights /> */}
-                {/* <LiveGrid /> */}
-            </div>
+                <TrafficLights />
+                <LiveGrid />
+            </div> */}
 
             <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-2 h-full">
                 <div>

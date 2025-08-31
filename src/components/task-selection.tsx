@@ -1,29 +1,55 @@
 import { getTask, updateTask } from "@/lib/db-operations";
 import { useState, useEffect } from "react";
+import { get, ref } from "firebase/database";
+import { database } from "@/lib/firebase";
+import { DEFAULT_SETTINGS } from "@/lib/settings-types";
 
 interface TaskSelectionProps {
     canWrite: boolean;
 }
 
 export default function TaskSelection({ canWrite }: TaskSelectionProps) {
-    // TODO hardcode tasks for now, later fetch from database maybe set with admin panel
-    const tasks = [
+    const [tasks, setTasks] = useState<{ id: number; name: string }[]>([
         { id: 1, name: "Task 1" },
         { id: 2, name: "Task 2" },
         { id: 3, name: "Task 3" },
         { id: 4, name: "Task 4" },
         { id: 5, name: "Task 5" },
-    ];
+    ]);
 
     const [taskSelected, setTaskSelected] = useState<number | null>(null);
 
     useEffect(() => {
+        // Fetch settings
+        const fetchSettings = async () => {
+            try {
+                const settingsSnapshot = await get(ref(database, "settings"));
+                if (settingsSnapshot.exists()) {
+                    const settings = settingsSnapshot.val();
+                    const numberOfTasks =
+                        settings.numberOfTasks ||
+                        DEFAULT_SETTINGS.numberOfTasks;
+
+                    // Create dynamic task list based on settings
+                    const newTasks = [];
+                    for (let i = 1; i <= numberOfTasks; i++) {
+                        newTasks.push({ id: i, name: `Task ${i}` });
+                    }
+                    setTasks(newTasks);
+                }
+            } catch (error) {
+                console.error("Error fetching settings:", error);
+            }
+        };
+
         // Fetch the current task from the database when the component mounts
         getTask().then((taskId) => {
             if (taskId !== null) {
                 setTaskSelected(taskId);
             }
         });
+
+        fetchSettings();
     }, []);
 
     return (

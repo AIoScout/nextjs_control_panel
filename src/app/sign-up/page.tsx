@@ -55,7 +55,7 @@ export default function SignUp() {
                 />
                 <button
                     type="submit"
-                    className="bg-primary text-white p-2 rounded disabled:opacity-50"
+                    className="bg-secondary text-white p-2 rounded disabled:opacity-50"
                     disabled={loading}
                 >
                     {loading ? "Signing up..." : "Sign Up"}

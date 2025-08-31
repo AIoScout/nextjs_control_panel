@@ -8,6 +8,7 @@ import {
 } from "./firebase";
 import { ref, get, update, set } from "firebase/database";
 import { ExamState, TrafficLight } from "./data-types";
+import { SystemSettings, DEFAULT_SETTINGS } from "./settings-types";
 
 // Get the appropriate base path for database operations
 const getBasePath = async (): Promise<string> => {
@@ -78,14 +79,31 @@ export const initializeUserData = async () => {
 
     const userPath = getUserPath(user);
 
-    // Initialize default exam state for new user
+    // Get system settings (admins) or use defaults (non-admins)
+    let settings;
+    try {
+        if (isAdmin(user)) {
+            settings = await getSystemSettings();
+        } else {
+            // Get settings from database without admin check
+            const settingsSnapshot = await get(ref(database, `settings`));
+            settings = settingsSnapshot.exists()
+                ? settingsSnapshot.val()
+                : DEFAULT_SETTINGS;
+        }
+    } catch (error) {
+        console.error("Error getting settings, using defaults:", error);
+        settings = DEFAULT_SETTINGS;
+    }
+
+    // Initialize default exam state for new user with system settings
     const defaultExamState: ExamState = {
         field: "testing field",
         activated: false,
         start_point: 0,
         end_point: 0,
         task_id: 0,
-        time_remain: 0,
+        time_remain: settings.countdownTime || 0,
     };
 
     // Check if user data already exists
@@ -223,3 +241,74 @@ export const updateTrafficLight = async (
 
 /* Live Grid Operations */
 // TODO - implement similar pattern for live grid data
+
+/* System Settings Operations */
+export const getSystemSettings = async (): Promise<SystemSettings> => {
+    const user = getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Only admins can read settings directly
+    if (!isAdmin(user)) {
+        throw new Error("Only admins can access system settings");
+    }
+
+    const snapshot = await get(ref(database, `settings`));
+    if (!snapshot.exists()) {
+        return DEFAULT_SETTINGS;
+    }
+
+    const data = snapshot.val();
+
+    // Handle migration from old format (separate maxStartPoints and maxEndPoints) to new format (single maxPoints)
+    if (data.maxStartPoints !== undefined && data.maxPoints === undefined) {
+        // Use maxStartPoints as the new maxPoints value if it exists
+        const migratedSettings: SystemSettings = {
+            maxPoints: data.maxStartPoints,
+            countdownTime: data.countdownTime || DEFAULT_SETTINGS.countdownTime,
+            numberOfTasks: data.numberOfTasks || DEFAULT_SETTINGS.numberOfTasks,
+        };
+
+        // Update the database with the migrated settings
+        await set(ref(database, `settings`), migratedSettings);
+        return migratedSettings;
+    }
+
+    return data as SystemSettings;
+};
+
+export const updateSystemSettings = async (
+    updates: Partial<SystemSettings>
+) => {
+    const user = getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Only admins can update settings
+    if (!isAdmin(user)) {
+        throw new Error("Only admins can update system settings");
+    }
+
+    // Get current settings
+    const currentSettings = await getSystemSettings();
+
+    // Update with new values
+    const newSettings = { ...currentSettings, ...updates };
+
+    // Save to database
+    await set(ref(database, `settings`), newSettings);
+};
+
+export const initializeSystemSettings = async () => {
+    const user = getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Only admins can initialize settings
+    if (!isAdmin(user)) {
+        throw new Error("Only admins can initialize system settings");
+    }
+
+    // Check if settings already exist
+    const snapshot = await get(ref(database, `settings`));
+    if (!snapshot.exists()) {
+        await set(ref(database, `settings`), DEFAULT_SETTINGS);
+    }
+};

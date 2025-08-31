@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, isAdmin } from "../lib/firebase";
 import { getDemoMode, setDemoMode } from "../lib/db-operations";
+import { Cog, ChevronRight, Power, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 export function AdminControls() {
     const [userIsAdmin, setUserIsAdmin] = useState(false);
@@ -63,32 +65,39 @@ export function AdminControls() {
     }
 
     return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">
-                Admin Controls
-            </h3>
-            <div className="flex items-center justify-between">
+        <div className="border rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-4">Admin Only Controls</h3>
+            <div className="space-y-4">
                 <div>
-                    <p className="text-sm text-red-700">
+                    <p className="text-md mb-1">
                         <strong>Demo Mode:</strong>{" "}
                         {demoMode ? "Active" : "Inactive"}
                     </p>
-                    <p className="text-xs text-red-600 mt-1">
+                    <p className="text-sm">
                         {demoMode
                             ? "Users can only read from admin data under /admin. Only admins can write. Your changes will be made to /admin"
                             : "Users have full access to their own data. Under the /users/uid. Your changes will not be made to /admin when demo mode is inactive."}
                     </p>
                 </div>
-                <button
-                    onClick={handleDemoModeToggle}
-                    className={`px-4 py-2 rounded-md text-white font-medium ${
-                        demoMode
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-green-600 hover:bg-green-700"
-                    }`}
-                >
-                    {demoMode ? "Disable Demo" : "Enable Demo"}
-                </button>
+                <div className="flex flex-row items-center gap-4 justify-start">
+                    <button
+                        onClick={handleDemoModeToggle}
+                        className={`px-4 py-2 rounded-md font-medium flex items-center ${
+                            demoMode ? "bg-error" : "bg-success"
+                        }`}
+                    >
+                        <Power className="mr-2 h-5 w-5" />
+                        {demoMode ? "Disable Demo" : "Enable Demo"}
+                    </button>
+
+                    <Link href="/settings">
+                        <button className="px-4 py-2 btn btn-secondary rounded-md font-medium flex items-center">
+                            <Cog className="mr-2 h-5 w-5" />
+                            Config Demo Settings
+                            <ChevronRight className="ml-2 h-5 w-5" />
+                        </button>
+                    </Link>
+                </div>
             </div>
         </div>
     );
