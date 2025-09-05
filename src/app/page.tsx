@@ -26,6 +26,7 @@ export default function Home() {
                     ISDN 2602 Control Panel
                 </p>
                 <p>Signed in as: {user?.email}</p>
+                <p>UID: {user?.uid}</p>
             </div>
 
             {/* Admin Controls - only visible to admins */}
