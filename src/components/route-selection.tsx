@@ -1,10 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import { updateRoute, getRoute } from "@/lib/db-operations";
+import { get, ref } from "firebase/database";
+import { database } from "@/lib/firebase";
+import { DEFAULT_SETTINGS } from "@/lib/settings-types";
 
-export default function RouteSelection() {
-    // TODO: later add this setting to admin panel so that the maximum points can be changed
-    const maxPoints = 15; // Maximum points for the range sliders
+interface RouteSelectionProps {
+    canWrite: boolean;
+}
+
+export default function RouteSelection({ canWrite }: RouteSelectionProps) {
+    const [maxPoints, setMaxPoints] = useState(DEFAULT_SETTINGS.maxPoints);
     const [startingPoint, setStartingPoint] = useState(1);
     const [endingPoint, setEndingPoint] = useState(1);
 
@@ -24,8 +30,29 @@ export default function RouteSelection() {
             });
     };
 
-    // Fetch the current route from firebase
+    // Fetch settings and route
     useEffect(() => {
+        // Fetch settings
+        const fetchSettings = async () => {
+            try {
+                const settingsSnapshot = await get(ref(database, "settings"));
+                if (settingsSnapshot.exists()) {
+                    const settings = settingsSnapshot.val();
+                    setMaxPoints(
+                        settings.maxPoints || DEFAULT_SETTINGS.maxPoints
+                    );
+                }
+            } catch (error) {
+                console.error("Error fetching settings:", error);
+            }
+        };
+
+        fetchSettings();
+    }, []);
+
+    // Fetch route when maxPoints is updated
+    useEffect(() => {
+        // Fetch route
         getRoute()
             .then((route) => {
                 setStartingPoint(route.start);
@@ -37,7 +64,7 @@ export default function RouteSelection() {
                 setStartingPoint(1);
                 setEndingPoint(maxPoints);
             });
-    }, []);
+    }, [maxPoints]);
 
     return (
         <div className="flex flex-col gap-2 content-center items-center p-4 border border-gray-300 rounded-lg shadow-md bg-white h-full">
@@ -50,8 +77,9 @@ export default function RouteSelection() {
                         min={1}
                         max={maxPoints}
                         value={startingPoint}
-                        className="range range-primary"
+                        className="range range-secondary"
                         step="1"
+                        disabled={!canWrite}
                         onChange={(e) => {
                             setStartingPoint(Number(e.target.value));
                         }}
@@ -65,8 +93,9 @@ export default function RouteSelection() {
                         min={1}
                         max={maxPoints}
                         value={endingPoint}
-                        className="range range-primary"
+                        className="range range-secondary"
                         step="1"
+                        disabled={!canWrite}
                         onChange={(e) => {
                             setEndingPoint(Number(e.target.value));
                         }}
@@ -75,8 +104,9 @@ export default function RouteSelection() {
                 </div>
             </div>
             <button
-                className="btn btn-primary mt-4"
+                className="btn btn-secondary mt-4"
                 onClick={handleRouteChange}
+                disabled={!canWrite}
             >
                 Update Route
             </button>
