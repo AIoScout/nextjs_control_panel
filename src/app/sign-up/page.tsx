@@ -3,6 +3,7 @@ import { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SignUp() {
     const [email, setEmail] = useState("");
@@ -33,6 +34,14 @@ export default function SignUp() {
     return (
         <div className="flex flex-col min-h-screen p-8 gap-4">
             <p className="md:text-4xl text-2xl font-bold">Sign Up</p>
+
+            <Link href="/login" className="text-secondary underline">
+                Already have an account? Log in
+            </Link>
+            <p>
+                Please remember your password, we do not provide account
+                retrieval service.
+            </p>
             <form
                 className="flex flex-col gap-4 max-w-sm"
                 onSubmit={handleSignUp}
@@ -55,7 +64,7 @@ export default function SignUp() {
                 />
                 <button
                     type="submit"
-                    className="bg-primary text-white p-2 rounded disabled:opacity-50"
+                    className="bg-secondary text-white p-2 rounded disabled:opacity-50"
                     disabled={loading}
                 >
                     {loading ? "Signing up..." : "Sign Up"}

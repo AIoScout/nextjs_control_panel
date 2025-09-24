@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js Control Panel for ISDN 2602
 
-## Getting Started
+Install dependencies with
+`npm install`
 
-First, run the development server:
+Run in dev mode with
+`npm run dev`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Firebase Realtime database structure
+```
+- admin
+    - examState
+        - activated:false
+        - end_point:1
+        - field:"final demo arena"
+        - start_point:5
+        - task_id:6
+        - time_remain:120
+    - trafficLights
+        - 1
+            - current_state:gree
+            - id:1
+            - time_remain:30
+        - 2
+        - 3
+- demoMode
+    - active:false
+- settings
+    - countdownTime:
+    - maxPoints:12
+    - numberOfTasks:6
+- users
+    - [uid]
+        - examState
+        - trafficLights
+    - [another uid]
+        - examState
+        - trafficLights
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other notes:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- During final demo time, when the admin has set the `/demoMode/active` to true, all users can not use the control panel, but they can still read from `/admin` to get the exam status for the car.
+- During testing, to avoid conflicts of users writing to the same firebase storage, data is now isolated under each user's uid `/users/[uid]/`
+- A whitelist of admin's uids is stored locally, only admins can set the demoMode `/demoMode/active`
+- Admins could also visit `/settings` page to set up the final demo configuration including the count down timer length, maximum number of start and end points as well as the number of tasks
