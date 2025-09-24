@@ -1,9 +1,10 @@
 export type ExamState = {
-    activated: boolean; // indicates if the exam is active based on the timer
+    field: "testing field" | "final demo arena";
+    activated: boolean;
     start_point: number;
     end_point: number;
-    task_id?: number; // null if no task is selected
-    time_remain?: number; // time remaining in seconds, null if not set
+    task_id: number;
+    time_remain: number;
 };
 
 export type TrafficLight = {

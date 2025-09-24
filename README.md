@@ -1,70 +1,47 @@
-# Next.js Control Panel
+# Next.js Control Panel for ISDN 2602
 
-## Dev Updates
+Install dependencies with
+`npm install`
 
-[2025-08-25]
-- Created two separate branch aside of main
-    - `main` - basic duplicate of the old site control panel with limited basic firebase operation
-    - `feat/live-map` - added Fiona’s part of backend integrating with the control panel
-    - `feat/firebase-data-isolation` - working on isolating user’s data and add admin control and route for user to get read only data for final demo
+Run in dev mode with
+`npm run dev`
 
-## Preparation
-### Frontend
-Install packages for Next.js control panel
-```bash
-npm install
+Firebase Realtime database structure
+```
+- admin
+    - examState
+        - activated:false
+        - end_point:1
+        - field:"final demo arena"
+        - start_point:5
+        - task_id:6
+        - time_remain:120
+    - trafficLights
+        - 1
+            - current_state:gree
+            - id:1
+            - time_remain:30
+        - 2
+        - 3
+- demoMode
+    - active:false
+- settings
+    - countdownTime:
+    - maxPoints:12
+    - numberOfTasks:6
+- users
+    - [uid]
+        - examState
+        - trafficLights
+    - [another uid]
+        - examState
+        - trafficLights
 ```
 
-### Backend
 
-1. Create virtual environment under `/backend` where the tile server programs are stored
+Other notes:
 
-    ``` bash
-    python -m venv backend/.venv
-    ```
-    Or using `uv`
-    ```bash
-    uv venv backend/.venv
-    ```
-2. Activate virtual environment (same command for using `uv`)
-    ```bash
-    source backend/.venv/bin/activate
-    ```
-3. Install required Python packages
-    ```bash
-    pip install -r backend/requirements.txt
-    ```
-    Or using `uv`
-    ```bash
-    uv pip install -r backend/requirements.txt
-    ```
-
-
-## Run
-
-### Terminal 1 - Web Socket
-```bash
-source backend/.venv/bin/activate
-python backend/websocket_server.py
-```
-Or using `uv`
-```bash
-source backend/.venv/bin/activate
-uv run backend/websocket_server.py
-```
-
-### Terminal 2 - Tile Server
-```bash
-source backend/.venv/bin/activate
-python backend/main.py
-```
-Or using `uv`
-```bash
-source backend/.venv/bin/activate
-uv run backend/main.py
-```
-
-### Terminal 3 - Next.js Control Panel
-```bash
-npm run dev
-```
+- During final demo time, when the admin has set the `/demoMode/active` to true, all users can not use the control panel, but they can still read from `/admin` to get the exam status for the car.
+- During testing, to avoid conflicts of users writing to the same firebase storage, data is now isolated under each user's uid `/users/[uid]/`
+- A whitelist of admin's uids is stored locally, only admins can set the demoMode `/demoMode/active`
+- Admins could also visit `/settings` page to set up the final demo configuration including the count down timer length, maximum number of start and end points as well as the number of tasks
