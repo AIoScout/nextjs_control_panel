@@ -9,8 +9,6 @@ const firebaseConfig = {
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 export const app: FirebaseApp = !getApps().length
@@ -21,7 +19,7 @@ export const auth = getAuth(app);
 
 // Admin whitelist - add admin user UIDs here
 const ADMIN_WHITELIST: string[] = [
-    "c1mqQryNr5cpLkake9E5xonGWsG2", // agoozyx@gmail.com
+    "1PvWA2xW95hu73QvVvJCZn7w5Yn1", // agoozyx@gmail.com
 ];
 
 export const isAdmin = (user: User | null): boolean => {

@@ -1,46 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
-import { getExamState, updateExamState } from "../lib/db-operations";
+import { useFieldState } from "../lib/useFieldState";
 
 interface FieldToggleProps {
     canWrite: boolean;
 }
 
 export default function FieldToggle({ canWrite }: FieldToggleProps) {
-    // true = 'final demo arena', false = 'testing field'
-    const [finalDemoDay, setFinalDemoDay] = useState<boolean | null>(null);
-
-    // Load initial value from db
-    useEffect(() => {
-        async function fetchField() {
-            try {
-                const examState = await getExamState();
-                if (examState && examState.field === "final demo arena") {
-                    setFinalDemoDay(true);
-                } else {
-                    setFinalDemoDay(false);
-                }
-            } catch {
-                setFinalDemoDay(false); // fallback
-            }
-        }
-        fetchField();
-    }, []);
-
-    // Update db when finalDemoDay changes (but not on initial load)
-    useEffect(() => {
-        if (finalDemoDay === null) return;
-        async function updateField() {
-            try {
-                await updateExamState({
-                    field: finalDemoDay ? "final demo arena" : "testing field",
-                });
-            } catch {
-                // Optionally handle error
-            }
-        }
-        updateField();
-    }, [finalDemoDay]);
+    const { finalDemoDay, setFinalDemoDay } = useFieldState();
 
     return (
         <div className="flex flex-col gap-2 content-center items-center p-4 border border-gray-300 rounded-lg shadow-md bg-white">

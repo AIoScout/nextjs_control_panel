@@ -79,7 +79,7 @@ export function AdminControls() {
                             : "Users have full access to their own data. Under the /users/uid. Your changes will not be made to /admin when demo mode is inactive."}
                     </p>
                 </div>
-                <div className="flex flex-row items-center gap-4 justify-start">
+                <div className="flex md:flex-row items-center gap-4 justify-start flex-wrap">
                     <button
                         onClick={handleDemoModeToggle}
                         className={`px-4 py-2 rounded-md font-medium flex items-center ${

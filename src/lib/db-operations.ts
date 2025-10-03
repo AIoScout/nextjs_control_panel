@@ -198,11 +198,21 @@ export const initTrafficLights = async () => {
         );
     }
 
-    const trafficLights: TrafficLight[] = [
-        { id: 1, current_state: "green", time_remain: 30 },
-        { id: 2, current_state: "yellow", time_remain: 10 },
-        { id: 3, current_state: "red", time_remain: 20 },
-    ];
+    // Possible states
+    const states = ["green", "yellow", "red"] as const;
+    
+    // Generate 4 traffic lights with randomized initial states
+    const trafficLights: TrafficLight[] = [];
+    for (let i = 1; i <= 4; i++) {
+        const randomState = states[Math.floor(Math.random() * states.length)];
+        const timeRemain = TRAFFIC_LIGHT_TIMING[randomState];
+        
+        trafficLights.push({
+            id: i,
+            current_state: randomState,
+            time_remain: timeRemain
+        });
+    }
 
     const basePath = await getBasePath();
     const updates = trafficLights.reduce((acc, light) => {
@@ -237,6 +247,70 @@ export const updateTrafficLight = async (
         ref(database, `${basePath}/trafficLights/${lightId}`),
         updates
     );
+};
+
+// Traffic light timing constants
+const TRAFFIC_LIGHT_TIMING = {
+    green: 10,
+    yellow: 2,
+    red: 5
+} as const;
+
+// Get next state in the cycle
+const getNextState = (currentState: string): { state: "green" | "yellow" | "red"; duration: number } => {
+    switch (currentState) {
+        case "green":
+            return { state: "yellow", duration: TRAFFIC_LIGHT_TIMING.yellow };
+        case "yellow":
+            return { state: "red", duration: TRAFFIC_LIGHT_TIMING.red };
+        case "red":
+            return { state: "green", duration: TRAFFIC_LIGHT_TIMING.green };
+        default:
+            return { state: "green", duration: TRAFFIC_LIGHT_TIMING.green };
+    }
+};
+
+// Update all traffic lights - decrease time and cycle states as needed
+export const updateAllTrafficLights = async () => {
+    // Always use admin path for traffic lights to ensure consistency
+    const adminPath = getAdminPath();
+    const trafficLights = await getTrafficLightsPublic();
+    const updates: Record<string, TrafficLight> = {};
+
+    for (const light of trafficLights) {
+        let newTimeRemain = light.time_remain - 1;
+        let newState = light.current_state;
+
+        // If time is up, move to next state
+        if (newTimeRemain <= 0) {
+            const nextStateInfo = getNextState(light.current_state);
+            newState = nextStateInfo.state;
+            newTimeRemain = nextStateInfo.duration;
+        }
+
+        const updatedLight: TrafficLight = {
+            ...light,
+            current_state: newState,
+            time_remain: newTimeRemain
+        };
+
+        updates[`${adminPath}/trafficLights/${light.id}`] = updatedLight;
+    }
+
+    if (Object.keys(updates).length > 0) {
+        await update(ref(database), updates);
+    }
+};
+
+// Public read access - doesn't require authentication or write permissions
+export const getTrafficLightsPublic = async (): Promise<TrafficLight[]> => {
+    // Always read from admin path for consistent public access
+    const adminPath = getAdminPath();
+    const snapshot = await get(ref(database, `${adminPath}/trafficLights`));
+    if (snapshot.exists()) {
+        return Object.values(snapshot.val()) as TrafficLight[];
+    }
+    return [];
 };
 
 /* Live Grid Operations */
