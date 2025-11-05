@@ -68,9 +68,13 @@ export default function TrafficLights() {
         const initialize = async () => {
             try {
                 if (userIsAdmin) {
-                    // Admin users can initialize and use admin functions
-                    await initTrafficLights();
-                    const lights = await getTrafficLights();
+                    // Admin users: check if traffic lights exist, only initialize if they don't
+                    let lights = await getTrafficLights();
+                    if (lights.length === 0) {
+                        // No traffic lights exist, initialize them
+                        await initTrafficLights();
+                        lights = await getTrafficLights();
+                    }
                     setTrafficLights(lights);
                 } else {
                     // Non-admin users fetch from public API

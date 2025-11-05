@@ -260,16 +260,16 @@ export const updateTrafficLight = async (
 
 
 // Get next state in the cycle
-const getNextState = (currentState: string): "green" | "yellow" | "red" => {
+const getNextState = (currentState: string): { state: "green" | "yellow" | "red"; duration: number } => {
     switch (currentState) {
         case "green":
-            return "yellow";
+            return { state: "yellow", duration: TRAFFIC_LIGHT_TIMING.yellow };
         case "yellow":
-            return "red";
+            return { state: "red", duration: TRAFFIC_LIGHT_TIMING.red };
         case "red":
-            return "green";
+            return { state: "green", duration: TRAFFIC_LIGHT_TIMING.green };
         default:
-            return "green";
+            return { state: "green", duration: TRAFFIC_LIGHT_TIMING.green };
     }
 };
 
@@ -286,11 +286,9 @@ export const updateAllTrafficLights = async () => {
 
         // If time is up, move to next state
         if (newTimeRemain <= 0) {
-            const nextState = getNextState(light.current_state);
-            newState = nextState;
-            // Randomize the duration for the next state to prevent synchronization
-            const baseDuration = TRAFFIC_LIGHT_TIMING[nextState];
-            newTimeRemain = Math.floor(Math.random() * baseDuration) + 1; // 1 to baseDuration
+            const nextStateInfo = getNextState(light.current_state);
+            newState = nextStateInfo.state;
+            newTimeRemain = nextStateInfo.duration;
         }
 
         const updatedLight: TrafficLight = {
