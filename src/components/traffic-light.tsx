@@ -106,6 +106,23 @@ export default function TrafficLights() {
         };
     }, [stopAutoUpdate]);
 
+    // Tailwind requires class names to be present at build-time. Avoid
+    // dynamically constructing `md:grid-cols-X` in the template literal
+    // because Tailwind JIT won't detect it. Map the possible numbers to
+    // explicit class strings so they are included in the compiled CSS.
+    const mdColsClassMap: Record<number, string> = {
+        1: "md:grid-cols-1",
+        2: "md:grid-cols-2",
+        3: "md:grid-cols-3",
+        4: "md:grid-cols-4",
+        5: "md:grid-cols-5",
+        6: "md:grid-cols-6",
+    };
+
+    const mdColsClass =
+        mdColsClassMap[NUMBER_OF_TRAFFIC_LIGHTS] ||
+        `md:grid-cols-${NUMBER_OF_TRAFFIC_LIGHTS}`;
+
     return (
         <div className="flex flex-col gap-4 content-center items-center p-4 border border-gray-300 rounded-lg shadow-md bg-white w-full">
             <div className="flex flex-col items-center gap-2">
@@ -137,7 +154,7 @@ export default function TrafficLights() {
             </div>
 
             <div
-                className={`grid grid-cols-2 md:grid-cols-${NUMBER_OF_TRAFFIC_LIGHTS} gap-4 content-center w-fit items-center`}
+                className={`grid grid-cols-2 ${mdColsClass} gap-4 content-center w-fit items-center`}
             >
                 {trafficLights.map((light: TrafficLight) => (
                     <div
