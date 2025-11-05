@@ -2,6 +2,7 @@
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getDatabase, Database } from "firebase/database";
 import { getAuth, User } from "firebase/auth";
+import { ADMIN_WHITELIST } from "@/config/adminWhitelist";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,10 +18,6 @@ export const app: FirebaseApp = !getApps().length
 export const database: Database = getDatabase(app);
 export const auth = getAuth(app);
 
-// Admin whitelist - add admin user UIDs here
-const ADMIN_WHITELIST: string[] = [
-    "1PvWA2xW95hu73QvVvJCZn7w5Yn1", // agoozyx@gmail.com
-];
 
 export const isAdmin = (user: User | null): boolean => {
     if (!user) return false;
