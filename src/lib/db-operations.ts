@@ -208,11 +208,13 @@ export const initTrafficLights = async () => {
     // Possible states
     const states = ["green", "yellow", "red"] as const;
     
-    // Generate 4 traffic lights with randomized initial states
+    // Generate traffic lights with randomized initial states and times
     const trafficLights: TrafficLight[] = [];
     for (let i = 1; i <= NUMBER_OF_TRAFFIC_LIGHTS; i++) {
         const randomState = states[Math.floor(Math.random() * states.length)];
-        const timeRemain = TRAFFIC_LIGHT_TIMING[randomState];
+        // Randomize the time remaining to stagger the changes
+        const maxTime = TRAFFIC_LIGHT_TIMING[randomState];
+        const timeRemain = Math.floor(Math.random() * maxTime) + 1; // 1 to maxTime
         
         trafficLights.push({
             id: i,
@@ -258,16 +260,16 @@ export const updateTrafficLight = async (
 
 
 // Get next state in the cycle
-const getNextState = (currentState: string): { state: "green" | "yellow" | "red"; duration: number } => {
+const getNextState = (currentState: string): "green" | "yellow" | "red" => {
     switch (currentState) {
         case "green":
-            return { state: "yellow", duration: TRAFFIC_LIGHT_TIMING.yellow };
+            return "yellow";
         case "yellow":
-            return { state: "red", duration: TRAFFIC_LIGHT_TIMING.red };
+            return "red";
         case "red":
-            return { state: "green", duration: TRAFFIC_LIGHT_TIMING.green };
+            return "green";
         default:
-            return { state: "green", duration: TRAFFIC_LIGHT_TIMING.green };
+            return "green";
     }
 };
 
@@ -284,9 +286,11 @@ export const updateAllTrafficLights = async () => {
 
         // If time is up, move to next state
         if (newTimeRemain <= 0) {
-            const nextStateInfo = getNextState(light.current_state);
-            newState = nextStateInfo.state;
-            newTimeRemain = nextStateInfo.duration;
+            const nextState = getNextState(light.current_state);
+            newState = nextState;
+            // Randomize the duration for the next state to prevent synchronization
+            const baseDuration = TRAFFIC_LIGHT_TIMING[nextState];
+            newTimeRemain = Math.floor(Math.random() * baseDuration) + 1; // 1 to baseDuration
         }
 
         const updatedLight: TrafficLight = {
