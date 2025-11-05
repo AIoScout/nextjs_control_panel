@@ -9,6 +9,8 @@ import {
 import { ref, get, update, set } from "firebase/database";
 import { ExamState, TrafficLight } from "./data-types";
 import { SystemSettings, DEFAULT_SETTINGS } from "./settings-types";
+// Traffic light timing constants
+import { TRAFFIC_LIGHT_TIMING, NUMBER_OF_TRAFFIC_LIGHTS } from "@/config/trafficLightsConfig";
 
 // Get the appropriate base path for database operations
 const getBasePath = async (): Promise<string> => {
@@ -110,7 +112,12 @@ export const initializeUserData = async () => {
     const snapshot = await get(ref(database, `${userPath}/examState`));
     if (!snapshot.exists()) {
         await set(ref(database, `${userPath}/examState`), defaultExamState);
-        await initTrafficLights(); // Initialize traffic lights for new user
+        // Only initialize traffic lights when an admin creates the system data.
+        // Regular users read traffic light states from the admin path and should
+        // not trigger initialization.
+        if (isAdmin(user)) {
+            await initTrafficLights();
+        }
     }
 };
 
@@ -203,7 +210,7 @@ export const initTrafficLights = async () => {
     
     // Generate 4 traffic lights with randomized initial states
     const trafficLights: TrafficLight[] = [];
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= NUMBER_OF_TRAFFIC_LIGHTS; i++) {
         const randomState = states[Math.floor(Math.random() * states.length)];
         const timeRemain = TRAFFIC_LIGHT_TIMING[randomState];
         
@@ -249,12 +256,6 @@ export const updateTrafficLight = async (
     );
 };
 
-// Traffic light timing constants
-const TRAFFIC_LIGHT_TIMING = {
-    green: 10,
-    yellow: 2,
-    red: 5
-} as const;
 
 // Get next state in the cycle
 const getNextState = (currentState: string): { state: "green" | "yellow" | "red"; duration: number } => {

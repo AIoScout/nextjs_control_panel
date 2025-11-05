@@ -4,6 +4,7 @@ import { getTrafficLights, initTrafficLights } from "@/lib/db-operations";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { isAdmin } from "@/lib/firebase";
+import { NUMBER_OF_TRAFFIC_LIGHTS } from "@/config/trafficLightsConfig";
 
 export default function TrafficLights() {
     const [trafficLights, setTrafficLights] = useState<TrafficLight[]>([]);
@@ -135,7 +136,9 @@ export default function TrafficLights() {
                 )}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 content-center w-fit items-center">
+            <div
+                className={`grid grid-cols-2 md:grid-cols-${NUMBER_OF_TRAFFIC_LIGHTS} gap-4 content-center w-fit items-center`}
+            >
                 {trafficLights.map((light: TrafficLight) => (
                     <div
                         key={light.id}
