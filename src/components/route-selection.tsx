@@ -1,16 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { updateRoute, getRoute } from "@/lib/db-operations";
-import { get, ref } from "firebase/database";
-import { database } from "@/lib/firebase";
-import { DEFAULT_SETTINGS } from "@/lib/settings-types";
+import { useFieldState } from "@/lib/useFieldState";
 
 interface RouteSelectionProps {
     canWrite: boolean;
 }
 
 export default function RouteSelection({ canWrite }: RouteSelectionProps) {
-    const [maxPoints, setMaxPoints] = useState(DEFAULT_SETTINGS.maxPoints);
+    const { finalDemoDay } = useFieldState();
+    const maxPoints = finalDemoDay ? 14 : 5;
     const [startingPoint, setStartingPoint] = useState(1);
     const [endingPoint, setEndingPoint] = useState(1);
 
@@ -30,27 +29,7 @@ export default function RouteSelection({ canWrite }: RouteSelectionProps) {
             });
     };
 
-    // Fetch settings and route
-    useEffect(() => {
-        // Fetch settings
-        const fetchSettings = async () => {
-            try {
-                const settingsSnapshot = await get(ref(database, "settings"));
-                if (settingsSnapshot.exists()) {
-                    const settings = settingsSnapshot.val();
-                    setMaxPoints(
-                        settings.maxPoints || DEFAULT_SETTINGS.maxPoints
-                    );
-                }
-            } catch (error) {
-                console.error("Error fetching settings:", error);
-            }
-        };
-
-        fetchSettings();
-    }, []);
-
-    // Fetch route when maxPoints is updated
+    // Fetch route when maxPoints changes
     useEffect(() => {
         // Fetch route
         getRoute()
