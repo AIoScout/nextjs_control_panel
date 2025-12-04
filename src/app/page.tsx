@@ -10,6 +10,7 @@ import Timer from "@/components/timer";
 import TrafficLights from "@/components/traffic-light";
 import { AdminControls } from "@/components/admin-controls";
 import { DemoModeIndicator } from "@/components/demo-mode-indicator";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function Home() {
     const { user, loading: authLoading } = useRequireAuth();
@@ -27,8 +28,17 @@ export default function Home() {
                     <p className="md:text-4xl text-2xl font-bold">
                         ISDN 2602 Control Panel
                     </p>
-                    <p>Signed in as: {user?.email}</p>
-                    <p>UID: {user?.uid}</p>
+                    <div>
+                        <div className="flex flex-row gap-4">
+                            <div className="flex flex-col">
+                                {" "}
+                                <p>Signed in as: {user?.email}</p>
+                                <p>UID: {user?.uid}</p>
+                            </div>
+
+                            <LogoutButton />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Admin Controls - only visible to admins */}

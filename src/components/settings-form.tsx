@@ -64,7 +64,7 @@ export default function SettingsForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+            {/* <div>
                 <div className="grid gap-6">
                     <div className="space-y-2">
                         <h3 className="text-lg font-medium">
@@ -96,7 +96,7 @@ export default function SettingsForm() {
                         </p>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div>
                 <div className="grid gap-6">
