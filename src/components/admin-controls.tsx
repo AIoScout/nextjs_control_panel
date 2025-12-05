@@ -5,6 +5,7 @@ import { getCurrentUser, isAdmin } from "../lib/firebase";
 import { getDemoMode, setDemoMode } from "../lib/db-operations";
 import { Cog, ChevronRight, Power } from "lucide-react";
 import Link from "next/link";
+import { ActiveUsersMonitor } from "./active-users-monitor";
 
 export function AdminControls() {
     const [userIsAdmin, setUserIsAdmin] = useState(false);
@@ -67,6 +68,12 @@ export function AdminControls() {
     return (
         <div className="border rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-4">Admin Only Controls</h3>
+
+            {/* Firebase Connection Monitor */}
+            <div className="mb-6">
+                <ActiveUsersMonitor />
+            </div>
+
             <div className="space-y-4">
                 <div>
                     <p className="text-md mb-1">

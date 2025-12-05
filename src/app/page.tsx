@@ -11,11 +11,19 @@ import TrafficLights from "@/components/traffic-light";
 import { AdminControls } from "@/components/admin-controls";
 import { DemoModeIndicator } from "@/components/demo-mode-indicator";
 import { LogoutButton } from "@/components/logout-button";
+import { usePresenceWithAutoLogout } from "@/lib/usePresenceWithAutoLogout";
 
 export default function Home() {
     const { user, loading: authLoading } = useRequireAuth();
     const { canWrite, loading: writeLoading } = useWritePermission();
     const timerCountdown = 120; // Default to 120 seconds, change if needed
+
+    // Enable presence tracking with auto-logout after 3 minutes idle
+    usePresenceWithAutoLogout({
+        userId: user?.uid || "",
+        idleTimeout: 3 * 60 * 1000, // 3 minutes to mark as idle
+        autoLogoutTimeout: 3 * 60 * 1000, // 3 minutes to auto-logout
+    });
 
     if (authLoading || writeLoading) {
         return <div>Loading...</div>;

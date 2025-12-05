@@ -1,4 +1,4 @@
 // Admin whitelist - add admin user UIDs here
 export const ADMIN_WHITELIST: string[] = [
-    "XYAMmCrQ9xMU6yCserdDFPdgker1", // agoozyx@gmail.com
+    "EqR0y9U3GcVmoLzNjNIz3Dq31qw2", // agoozyx@gmail.com
 ];
