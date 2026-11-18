@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { updateAllTrafficLights, getTrafficLightsPublic } from "@/lib/db-operations";
-import { adminAuth } from "@/lib/firebase-admin";
+import { buildTrafficLightUpdates, getTrafficLightsPublic } from "@/lib/db-operations";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import type { TrafficLight } from "@/lib/data-types";
 
 // POST - Update traffic light system automatically (for timer/cron)
 // This endpoint is designed to be called every second by a timer or cron job
@@ -37,7 +38,20 @@ export async function POST(request: Request) {
             );
         }
 
-        await updateAllTrafficLights();
+        const lightsRef = adminDb.ref("admin/trafficLights");
+        const snapshot = await lightsRef.get();
+        const lights = Object.values(snapshot.val() ?? {}) as TrafficLight[];
+        const updates = buildTrafficLightUpdates(lights);
+        
+        if (Object.keys(updates).length > 0) {
+            await lightsRef.update(updates);
+        }
+
+        return NextResponse.json({
+            success: true,
+            trafficLights: Object.values(updates),
+            timestamp: new Date().toISOString(),
+        });
 
     } catch (error) {
         console.error("Error in traffic light update cycle:", error);
