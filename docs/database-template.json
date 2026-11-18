@@ -1,0 +1,40 @@
+{
+  "admin": {
+    "examState": {
+      "activated": false,
+      "field": "final demo arena",
+      "start_point": 0,
+      "end_point": 0,
+      "task_id": 0,
+      "time_remain": 0
+    },
+    "trafficLights": [
+      null,
+      { "id": 1, "current_state": "red", "time_remain": 5 },
+      { "id": 2, "current_state": "green", "time_remain": 10 },
+      { "id": 3, "current_state": "yellow", "time_remain": 2 },
+      { "id": 4, "current_state": "green", "time_remain": 7 },
+      { "id": 5, "current_state": "red", "time_remain": 3 }
+    ]
+  },
+  "demoMode": {
+    "active": false
+  },
+  "settings": {
+    "maxPoints": 14,
+    "countdownTime": 120,
+    "numberOfTasks": 5
+  },
+  "users": {
+    "<uid>": {
+      "examState": {
+        "activated": false,
+        "field": "final demo arena",
+        "start_point": 0,
+        "end_point": 0,
+        "task_id": 0,
+        "time_remain": 120
+      }
+    }
+  }
+}
