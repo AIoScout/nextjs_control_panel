@@ -1,20 +1,44 @@
 import { NextResponse } from "next/server";
 import { updateAllTrafficLights, getTrafficLightsPublic } from "@/lib/db-operations";
+import { adminAuth } from "@/lib/firebase-admin";
 
 // POST - Update traffic light system automatically (for timer/cron)
 // This endpoint is designed to be called every second by a timer or cron job
-export async function POST() {
+export async function POST(request: Request) {
     try {
-        // Update all traffic lights (advance countdown and cycle states)
+        const token = request.headers
+            .get("authorization")
+            ?.match(/^Bearer\s+(\S+)$/i)?.[1];
+
+        if (!token) {
+            return NextResponse.json(
+                { success: false, error: "Authentication required" },
+                { status: 401 }
+            );
+        }
+
+        const caller = await adminAuth.verifyIdToken(token).catch(() => null);
+        if (!caller) {
+            return NextResponse.json(
+                { success: false, error: "Invalid or expired token" },
+                { status: 401 }
+            );
+        }
+
+        const adminUid = process.env.TRAFFIC_LIGHTS_ADMIN_UID;
+        if (!adminUid) {
+            throw new Error("TRAFFIC_LIGHTS_ADMIN_UID is not configured");
+        }
+
+        if (caller.uid !== adminUid) {
+            return NextResponse.json(
+                { success: false, error: "Admin privileges required" },
+                { status: 403 }
+            );
+        }
+
         await updateAllTrafficLights();
-        
-        // Return updated traffic lights for real-time updates
-        const updatedTrafficLights = await getTrafficLightsPublic();
-        return NextResponse.json({
-            success: true,
-            trafficLights: updatedTrafficLights,
-            timestamp: new Date().toISOString()
-        });
+
     } catch (error) {
         console.error("Error in traffic light update cycle:", error);
         return NextResponse.json(
