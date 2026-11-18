@@ -14,9 +14,10 @@ export async function POST(request: Request) {
     }
 
     try {
-        const databaseUrl = process.env.FIREBASE_DATABASE_URL;
+        const databaseUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim();
+
         if (!databaseUrl) {
-            throw new Error("FIREBASE_DATABASE_URL is not configured");
+            throw new Error("NEXT_PUBLIC_FIREBASE_DATABASE_URL is not configured");
         }
 
         const lights = await getTrafficLightsPublic();
