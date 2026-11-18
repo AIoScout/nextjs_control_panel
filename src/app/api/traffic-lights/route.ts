@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import {
     getTrafficLightsPublic,
-    initTrafficLightsPublic,
+    // initTrafficLightsPublic,
     updateAllTrafficLights
 } from "@/lib/db-operations";
 import { getCurrentUser, isAdmin } from "@/lib/firebase";
@@ -12,12 +12,14 @@ import { getCurrentUser, isAdmin } from "@/lib/firebase";
 // "not yet initialized" state.
 export async function GET() {
     try {
-        let trafficLights = await getTrafficLightsPublic();
-        if (trafficLights.length === 0) {
-            await initTrafficLightsPublic();
-            trafficLights = await getTrafficLightsPublic();
-        }
-        return NextResponse.json(trafficLights);
+        // let trafficLights = await getTrafficLightsPublic();
+        // if (trafficLights.length === 0) {
+        //     await initTrafficLightsPublic();
+        //     trafficLights = await getTrafficLightsPublic();
+        // }
+        // return NextResponse.json(trafficLights);
+
+        return NextResponse.json(await getTrafficLightsPublic());
     } catch (error) {
         console.error("Error fetching traffic lights:", error);
         return NextResponse.json(
