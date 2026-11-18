@@ -286,35 +286,36 @@ const getNextState = (currentState: string): { state: "green" | "yellow" | "red"
     }
 };
 
-// Update all traffic lights - decrease time and cycle states as needed
-export const updateAllTrafficLights = async () => {
-    // Always use admin path for traffic lights to ensure consistency
-    const adminPath = getAdminPath();
-    const trafficLights = await getTrafficLightsPublic();
+// Calculate the next state without writing to Firebase.
+export const buildTrafficLightUpdates = (trafficLights: TrafficLight[]) => {
     const updates: Record<string, TrafficLight> = {};
 
     for (const light of trafficLights) {
-        let newTimeRemain = light.time_remain - 1;
-        let newState = light.current_state;
+        let timeRemain = light.time_remain - 1;
+        let state = light.current_state;
 
-        // If time is up, move to next state
-        if (newTimeRemain <= 0) {
-            const nextStateInfo = getNextState(light.current_state);
-            newState = nextStateInfo.state;
-            newTimeRemain = nextStateInfo.duration;
+        if (timeRemain <= 0) {
+            const next = getNextState(state);
+            timeRemain = next.duration;
+            state = next.state;
         }
 
-        const updatedLight: TrafficLight = {
+        updates[String(light.id)] = {
             ...light,
-            current_state: newState,
-            time_remain: newTimeRemain
+            current_state: state,
+            time_remain: timeRemain,
         };
-
-        updates[`${adminPath}/trafficLights/${light.id}`] = updatedLight;
     }
 
+    return updates;
+};
+
+// Keep this export for existing callers.
+export const updateAllTrafficLights = async () => {
+    const updates = buildTrafficLightUpdates(await getTrafficLightsPublic());
+
     if (Object.keys(updates).length > 0) {
-        await update(ref(database), updates);
+        await update(ref(database, `${getAdminPath()}/trafficLights`), updates);
     }
 };
 
