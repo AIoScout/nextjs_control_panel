@@ -198,43 +198,57 @@ export const updateTask = async (taskId: number) => {
 };
 
 /* Traffic Light Operations */
-export const initTrafficLights = async () => {
-    if (!(await canWrite())) {
-        throw new Error(
-            "Write access denied. Only admins can modify data in demo mode."
-        );
-    }
+// Traffic lights are shared system data and always live at the admin path,
+// so every client and the update API read/write the same nodes.
 
+// Generate traffic lights with randomized initial states and times
+const generateTrafficLights = (): TrafficLight[] => {
     // Possible states
     const states = ["green", "yellow", "red"] as const;
-    
-    // Generate traffic lights with randomized initial states and times
+
     const trafficLights: TrafficLight[] = [];
     for (let i = 1; i <= NUMBER_OF_TRAFFIC_LIGHTS; i++) {
         const randomState = states[Math.floor(Math.random() * states.length)];
         // Randomize the time remaining to stagger the changes
         const maxTime = TRAFFIC_LIGHT_TIMING[randomState];
         const timeRemain = Math.floor(Math.random() * maxTime) + 1; // 1 to maxTime
-        
+
         trafficLights.push({
             id: i,
             current_state: randomState,
             time_remain: timeRemain
         });
     }
+    return trafficLights;
+};
 
-    const basePath = await getBasePath();
-    const updates = trafficLights.reduce((acc, light) => {
-        acc[`${basePath}/trafficLights/${light.id}`] = light;
+// Write initial traffic lights to the shared admin path. Deliberately has no
+// auth/write-permission check: the public API route calls this from the
+// server (where auth.currentUser is unavailable) to auto-initialize traffic
+// lights on first access when the database has no data yet.
+export const initTrafficLightsPublic = async () => {
+    const adminPath = getAdminPath();
+    const updates = generateTrafficLights().reduce((acc, light) => {
+        acc[`${adminPath}/trafficLights/${light.id}`] = light;
         return acc;
     }, {} as Record<string, TrafficLight>);
 
     await update(ref(database), updates);
 };
 
+export const initTrafficLights = async () => {
+    if (!(await canWrite())) {
+        throw new Error(
+            "Write access denied. Only admins can modify data in demo mode."
+        );
+    }
+    await initTrafficLightsPublic();
+};
+
 export const getTrafficLights = async (): Promise<TrafficLight[]> => {
-    const basePath = await getBasePath();
-    const snapshot = await get(ref(database, `${basePath}/trafficLights`));
+    const snapshot = await get(
+        ref(database, `${getAdminPath()}/trafficLights`)
+    );
     if (snapshot.exists()) {
         return Object.values(snapshot.val()) as TrafficLight[];
     }
@@ -251,9 +265,8 @@ export const updateTrafficLight = async (
         );
     }
 
-    const basePath = await getBasePath();
     await update(
-        ref(database, `${basePath}/trafficLights/${lightId}`),
+        ref(database, `${getAdminPath()}/trafficLights/${lightId}`),
         updates
     );
 };

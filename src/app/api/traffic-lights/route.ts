@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
-import { 
-    getTrafficLightsPublic, 
+import {
+    getTrafficLightsPublic,
+    initTrafficLightsPublic,
     updateAllTrafficLights
 } from "@/lib/db-operations";
 import { getCurrentUser, isAdmin } from "@/lib/firebase";
 
-// GET - Public access to read traffic lights
+// GET - Public access to read traffic lights.
+// Auto-initializes the traffic lights if the database has none yet, so the
+// first visit to the page sets the system up instead of showing an empty
+// "not yet initialized" state.
 export async function GET() {
     try {
-        const trafficLights = await getTrafficLightsPublic();
+        let trafficLights = await getTrafficLightsPublic();
+        if (trafficLights.length === 0) {
+            await initTrafficLightsPublic();
+            trafficLights = await getTrafficLightsPublic();
+        }
         return NextResponse.json(trafficLights);
     } catch (error) {
         console.error("Error fetching traffic lights:", error);

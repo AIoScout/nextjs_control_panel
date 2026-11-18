@@ -8,6 +8,7 @@ import { NUMBER_OF_TRAFFIC_LIGHTS } from "@/config/trafficLightsConfig";
 
 export default function TrafficLights() {
     const [trafficLights, setTrafficLights] = useState<TrafficLight[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isAutoUpdate, setIsAutoUpdate] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const { user } = useRequireAuth();
@@ -77,7 +78,8 @@ export default function TrafficLights() {
                     }
                     setTrafficLights(lights);
                 } else {
-                    // Non-admin users fetch from public API
+                    // Non-admin users fetch from public API, which
+                    // auto-initializes traffic lights on a fresh database
                     const response = await fetch("/api/traffic-lights");
                     if (response.ok) {
                         const lights = await response.json();
@@ -86,6 +88,8 @@ export default function TrafficLights() {
                 }
             } catch (error) {
                 console.error("Error initializing traffic lights:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -210,9 +214,9 @@ export default function TrafficLights() {
 
             {trafficLights.length === 0 && (
                 <div className="text-gray-500 text-center py-8">
-                    {userIsAdmin
-                        ? 'No traffic lights found. Click "Start Auto Update" to initialize.'
-                        : "No traffic lights available. Please contact an admin to initialize the system."}
+                    {isLoading
+                        ? "Loading traffic lights..."
+                        : "No traffic lights available."}
                 </div>
             )}
         </div>
