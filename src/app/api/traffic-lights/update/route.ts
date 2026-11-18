@@ -1,50 +1,56 @@
 import { NextResponse } from "next/server";
 import { buildTrafficLightUpdates, getTrafficLightsPublic } from "@/lib/db-operations";
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
-import type { TrafficLight } from "@/lib/data-types";
 
-// POST - Update traffic light system automatically (for timer/cron)
-// This endpoint is designed to be called every second by a timer or cron job
 export async function POST(request: Request) {
+    const token = request.headers
+        .get("authorization")
+        ?.match(/^Bearer\s+(\S+)$/i)?.[1];
+
+    if (!token) {
+        return NextResponse.json(
+            { success: false, error: "Authentication required" },
+            { status: 401 }
+        );
+    }
+
     try {
-        const token = request.headers
-            .get("authorization")
-            ?.match(/^Bearer\s+(\S+)$/i)?.[1];
+        const databaseUrl = process.env.FIREBASE_DATABASE_URL;
+        if (!databaseUrl) {
+            throw new Error("FIREBASE_DATABASE_URL is not configured");
+        }
 
-        if (!token) {
+        const lights = await getTrafficLightsPublic();
+        if (lights.length === 0) {
             return NextResponse.json(
-                { success: false, error: "Authentication required" },
-                { status: 401 }
+                { success: false, error: "No traffic lights to update" },
+                { status: 409 }
             );
         }
 
-        const caller = await adminAuth.verifyIdToken(token).catch(() => null);
-        if (!caller) {
-            return NextResponse.json(
-                { success: false, error: "Invalid or expired token" },
-                { status: 401 }
-            );
-        }
+        const updates = buildTrafficLightUpdates(lights);
+        const url = new URL("/admin/trafficLights.json", databaseUrl);
+        url.searchParams.set("auth", token);
 
-        const adminUid = process.env.TRAFFIC_LIGHTS_ADMIN_UID;
-        if (!adminUid) {
-            throw new Error("TRAFFIC_LIGHTS_ADMIN_UID is not configured");
-        }
+        const result = await fetch(url, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updates),
+            redirect: "error",
+        });
 
-        if (caller.uid !== adminUid) {
+        if (result.status === 401 || result.status === 403) {
             return NextResponse.json(
-                { success: false, error: "Admin privileges required" },
+                { success: false, error: "Firebase denied the write" },
                 { status: 403 }
             );
         }
 
-        const lightsRef = adminDb.ref("admin/trafficLights");
-        const snapshot = await lightsRef.get();
-        const lights = Object.values(snapshot.val() ?? {}) as TrafficLight[];
-        const updates = buildTrafficLightUpdates(lights);
-        
-        if (Object.keys(updates).length > 0) {
-            await lightsRef.update(updates);
+        if (!result.ok) {
+            console.error("Firebase traffic-light update failed:", result.status);
+            return NextResponse.json(
+                { success: false, error: "Firebase could not update traffic lights" },
+                { status: 502 }
+            );
         }
 
         return NextResponse.json({
@@ -52,15 +58,11 @@ export async function POST(request: Request) {
             trafficLights: Object.values(updates),
             timestamp: new Date().toISOString(),
         });
-
-    } catch (error) {
-        console.error("Error in traffic light update cycle:", error);
+    } catch {
+        // Do not log the outgoing URL: it contains the Firebase ID token.
+        console.error("Traffic-light update failed; check database configuration and connectivity");
         return NextResponse.json(
-            { 
-                success: false,
-                error: "Failed to update traffic lights",
-                timestamp: new Date().toISOString()
-            },
+            { success: false, error: "Failed to update traffic lights" },
             { status: 500 }
         );
     }
