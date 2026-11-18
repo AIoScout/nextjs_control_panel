@@ -21,17 +21,27 @@ export default function TrafficLights() {
         intervalRef.current = setInterval(async () => {
             try {
                 if (userIsAdmin) {
-                    // Admin users can call the update API to advance states
+                    // // Admin users can call the update API to advance states
+                    // const response = await fetch("/api/traffic-lights/update", {
+                    //     method: "POST",
+                    // });
+
+                    // if (response.ok) {
+                    //     const data = await response.json();
+                    //     if (data.success && data.trafficLights) {
+                    //         setTrafficLights(data.trafficLights);
+                    //     }
+                    // }
+
+                    if (!user) return;
+
                     const response = await fetch("/api/traffic-lights/update", {
                         method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${await user.getIdToken()}`,
+                        },
                     });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.trafficLights) {
-                            setTrafficLights(data.trafficLights);
-                        }
-                    }
+                    
                 } else {
                     // Non-admin users just fetch current state (read-only)
                     const response = await fetch("/api/traffic-lights");
@@ -44,7 +54,7 @@ export default function TrafficLights() {
                 console.error("Error updating traffic lights:", error);
             }
         }, 1000); // Update every second
-    }, [userIsAdmin]);
+    }, [userIsAdmin, user]);
 
     const stopAutoUpdate = useCallback(() => {
         if (intervalRef.current) {
