@@ -41,6 +41,15 @@ export default function TrafficLights() {
                             Authorization: `Bearer ${await user.getIdToken()}`,
                         },
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`Traffic light update failed: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.success && Array.isArray(data.trafficLights)) {
+                        setTrafficLights(data.trafficLights);
+                    }
                     
                 } else {
                     // Non-admin users just fetch current state (read-only)
